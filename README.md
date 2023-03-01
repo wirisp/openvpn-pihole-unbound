@@ -86,10 +86,13 @@ systemctl enable pihole-FTL
 - Subir los archivos del cliente correspondientes, al Administrador de archivos, en este caso el cliente se llama Mk17, por lo que se suben `Mk17.crt` y `Mk17.key`
 <img width="454" alt="image" src="https://user-images.githubusercontent.com/13319563/222213812-80b61638-2fc8-4ee0-b79e-902e7316d32d.png">
 - Despues en la terminal los importamos
+
+
 ```
 certificate import file-name=Mk17.crt
 certificate import file-name=Mk17.key
 ```
+
 - Creamos el perfil que usaremos
 
 ```
