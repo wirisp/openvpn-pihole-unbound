@@ -74,7 +74,7 @@ BLOCKING_ENABLED=true
 PIHOLE_DNS_1=127.0.0.1#5335
 PIHOLE_DNS_2=127.0.0.1#5335
 DNSSEC=false
-REV_SERVER=false" >> /etc/openvpn/server/server.conf
+REV_SERVER=false" >> /etc/pihole/setupVars.conf 
 ```
 
 - Activamos con
