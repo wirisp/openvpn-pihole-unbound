@@ -82,6 +82,11 @@ REV_SERVER=false" >> /etc/pihole/setupVars.conf
 ```
 systemctl enable pihole-FTL
 ```
+
+- Reiniciamos con
+```
+sudo reboot
+```
 ## Conexion a mikrotik
 - Subir los archivos del cliente correspondientes, al Administrador de archivos, en este caso el cliente se llama Mk17, por lo que se suben `Mk17.crt` y `Mk17.key`
 <img width="454" alt="image" src="https://user-images.githubusercontent.com/13319563/222213812-80b61638-2fc8-4ee0-b79e-902e7316d32d.png">
@@ -102,7 +107,11 @@ ppp profile add name=OVPN-client change-tcp-mss=yes only-one=yes use-encryption=
 ```
 interface ovpn-client add name=ovpn-client connect-to=xxx.xxx.xxx.xxx port=1194 mode=ip user="openvpn" password="" profile=OVPN-client certificate=Mk17.crt_0 auth=sha1 cipher=blowfish128 add-default-route=yes
 ```
-- Reiniciamos con
+
+>Listo ya tenemos configurado y corriendo Openvpn con pihole y unbound, podemos administrar desde `IP/admin`
+
+- Cambio de password con
+
 ```
-sudo reboot
+pihole -a -p
 ```
