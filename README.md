@@ -50,6 +50,10 @@ systemctl status openvpn-server@server.service
 ## Instalacion y configuracion de unbound
 Instalamos unbound con el siguiente comando, no antes de darle permisos
 ```
+wget https://raw.githubusercontent.com/wirisp/openvpn-pihole-unbound/main/unbound.sh -O unbound.sh
+```
+
+```
 chmod +x *.sh
 ./unbound.sh 
 ```
