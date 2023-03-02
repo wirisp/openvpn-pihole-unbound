@@ -111,7 +111,17 @@ ppp profile add name=OVPN-client change-tcp-mss=yes only-one=yes use-encryption=
 ```
 interface ovpn-client add name=ovpn-client connect-to=xxx.xxx.xxx.xxx port=1194 mode=ip user="openvpn" password="" profile=OVPN-client certificate=Mk17.crt_0 auth=sha1 cipher=blowfish128 add-default-route=yes
 ```
+- Cambia los Dns en 
+```
+/ip dns
+set allow-remote-requests=yes servers=10.8.0.1
+```
 
+y tambien en 
+
+```
+/ip dhcp-server network
+```
 >Listo ya tenemos configurado y corriendo Openvpn con pihole y unbound, podemos administrar desde `IP/admin`
 
 - Cambio de password con
