@@ -5,6 +5,7 @@ servidor  = Debian 11, instalacion de openvpn, pihole y unbound,
 - Primero descargamos el script a nuestro sistema , ene ste caso, debian 11.
 ```
 wget https://raw.githubusercontent.com/volstr/openvpn-install-routeros/main/openvpn-install-routeros.sh -O openvpn-install-routeros.sh
+#wget https://raw.githubusercontent.com/wirisp/openvpn-pihole-unbound/main/openvpn-install-routeros.sh -O openvpn-install-routeros.sh
 ```
 - Despues ejecutamos el script descargado
 ```
