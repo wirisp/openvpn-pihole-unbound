@@ -110,11 +110,7 @@ set allow-remote-requests=no servers=10.8.0.1
 ```
 <img width="319" alt="image" src="https://user-images.githubusercontent.com/13319563/222987641-ad3f3498-df98-4f7f-8a7b-784f5a89027e.png">
 
-y tambien en 
 
-```
-/ip dhcp-server network
-```
 >Listo ya tenemos configurado y corriendo Openvpn con pihole y unbound, podemos administrar desde `IP/admin`
 
 - Cambio de password con
