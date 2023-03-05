@@ -13,22 +13,9 @@ sudo bash ./openvpn-install-routeros.sh
 ```
 > si te pregunta el tipo de conexion , selecciona tcp
 
-- Despues cambiamos los dns con
-
 ```
-nano /etc/openvpn/server/server.conf
-```
-
-_Comentamos las lineas siguientes y en su lugar colocamos una nueva con la ip que usaremos de DNS_
-```
-#Stop using Google DNS for our OpenVPN
-#push "dhcp-option DNS 8.8.8.8"
-#push "dhcp-option DNS 8.8.4.4"
-```
-- Colocamos esta nueva
-
-```
-push "dhcp-option DNS 10.8.0.1"
+systemctl start openvpn-server@server.service
+systemctl status openvpn-server@server.service
 ```
 ## Instalacion de pihole
 1. Instalamos primero con este comando, el cual posiblemente dara error por lo que usaremos el segundos seguido.
@@ -110,14 +97,18 @@ certificate import file-name=Mk17.key
 ppp profile add name=OVPN-client change-tcp-mss=yes only-one=yes use-encryption=yes use-mpls=no use-compression=no
 ```
 - Creamos la inteface ppp para ovpn
+
+<img width="291" alt="image" src="https://user-images.githubusercontent.com/13319563/222987665-9967a841-7c20-498e-8d89-a64fe9927757.png">
+
 ```
 interface ovpn-client add name=ovpn-client connect-to=xxx.xxx.xxx.xxx port=1194 mode=ip user="openvpn" password="" profile=OVPN-client certificate=Mk17.crt_0 auth=sha1 cipher=blowfish128 add-default-route=yes
 ```
 - Cambia los Dns en 
 ```
 /ip dns
-set allow-remote-requests=yes servers=10.8.0.1
+set allow-remote-requests=no servers=10.8.0.1
 ```
+<img width="319" alt="image" src="https://user-images.githubusercontent.com/13319563/222987641-ad3f3498-df98-4f7f-8a7b-784f5a89027e.png">
 
 y tambien en 
 
