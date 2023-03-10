@@ -118,3 +118,8 @@ set allow-remote-requests=no servers=10.8.0.1
 ```
 pihole -a -p
 ```
+
+- Desinstalacion de pihole
+```
+pihole uninstall
+```
