@@ -123,3 +123,5 @@ pihole -a -p
 ```
 pihole uninstall
 ```
+- Cliente openvpn linux pop Os
+`https://support.system76.com/articles/use-openvpn/`
