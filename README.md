@@ -87,8 +87,8 @@ sudo reboot
 
 
 ```
-certificate import file-name=Mk17.crt
-certificate import file-name=Mk17.key
+certificate import passphrase="" file-name=Mk17.crt
+certificate import passphrase="" file-name=Mk17.key
 ```
 
 - Creamos el perfil que usaremos
@@ -101,7 +101,7 @@ ppp profile add name=OVPN-client change-tcp-mss=yes only-one=yes use-encryption=
 <img width="291" alt="image" src="https://user-images.githubusercontent.com/13319563/222987665-9967a841-7c20-498e-8d89-a64fe9927757.png">
 
 ```
-interface ovpn-client add name=ovpn-client connect-to=xxx.xxx.xxx.xxx port=1194 mode=ip user="openvpn" password="" profile=OVPN-client certificate=Mk17.crt_0 auth=sha1 cipher=blowfish128 add-default-route=yes
+interface ovpn-client add name=ovpn-client connect-to=xxx.xxx.xxx.xxx port=1194 mode=ip user="openvpn" password="" profile=OVPN-client certificate=Mk17.crt_0 auth=sha1 cipher=aes256 add-default-route=yes
 ```
 - Cambia los Dns en 
 ```
