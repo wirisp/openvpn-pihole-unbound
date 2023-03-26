@@ -83,7 +83,9 @@ sudo reboot
 ## Conexion a mikrotik
 - Subir los archivos del cliente correspondientes, al Administrador de archivos, en este caso el cliente se llama Mk17, por lo que se suben `Mk17.crt` y `Mk17.key`
 <img width="454" alt="image" src="https://user-images.githubusercontent.com/13319563/222213812-80b61638-2fc8-4ee0-b79e-902e7316d32d.png">
--Del servidor descargamos el .key y .crt que se encuentran en;
+
+- Del servidor descargamos el .key y .crt que se encuentran en
+
 ```
 /etc/openvpn/server/easy-rsa/pki/private/Mk17.key
 /etc/openvpn/server/easy-rsa/pki/issued/Mk17.crt
