@@ -125,3 +125,30 @@ pihole uninstall
 ```
 - Cliente openvpn linux pop Os
 `https://support.system76.com/articles/use-openvpn/`
+
+- posibles errores de apache2
+Instalamos net-tools para solucionar el error del puerto 80
+```
+apt install net-tools
+```
+```
+netstat -ltnp | grep :80
+```
+Ahora hacemos kill al pid que obtuvimos, por ejemplo el 1047
+```
+sudo kill -9 1047
+```
+```
+sudo systemctl stop apache2.service 
+sudo systemctl enable apache2.service 
+sudo systemctl start apache2.service
+sudo systemctl status apache2.service
+```
+- Dns no resolve dominios
+```
+nano /etc/resolv.conf
+```
+Colocar
+```
+nameserver 8.8.8.8
+```
