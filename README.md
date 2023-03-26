@@ -152,3 +152,20 @@ Colocar
 ```
 nameserver 8.8.8.8
 ```
+Y si al reiniciar se borran los datos entonces hay que editar alguno de estos dos archivos
+
+Editar
+```
+nano /etc/resolvconf/resolv.conf.d/head
+#Colocar dentro
+nameserver 1.1.1.1
+nameserver 1.0.0.1
+```
+o si no funciona este
+
+```
+nano /etc/resolvconf/resolv.conf.d/tail
+#Colocar dentro
+nameserver 1.1.1.1
+nameserver 1.0.0.1
+```
