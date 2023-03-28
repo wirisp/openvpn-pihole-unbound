@@ -17,6 +17,50 @@ sudo bash ./openvpn-install-routeros.sh
 systemctl start openvpn-server@server.service
 systemctl status openvpn-server@server.service
 ```
+
+Con esto ya tenemos openvpn en el servidor, podemos usarlo con dispocitivos y funcionara muy bien, todo el trafico pasara por su interfaz, ahora si queremos usar pihole y unbound, ademas solamente usarlo como resolvedor DNS, entonces en la configuracion de openvpn hacemos lo siguiente.
+
+```
+local 38.242.2xx.xxx
+port 1194
+proto tcp
+dev tun
+user nobody
+group nogroup
+persist-key
+persist-tun
+client-to-client
+client-config-dir /etc/openvpn/client/
+topology subnet
+ca ca.crt
+cert server.crt
+key server.key
+dh dh.pem
+#tls-crypt tc.key
+#tls-auth tls-auth.key 0
+#tls-server
+#tls-version-min 1.2
+#tls-cipher TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256
+auth SHA1
+server 10.8.0.0 255.255.255.0
+server-ipv6 fddd:1194:1194:1194::/64
+#Comenta esta linea
+#push "redirect-gateway def1 ipv6 bypass-dhcp"
+ifconfig-pool-persist ipp.txt
+#Coloca o agrega esta linea de los dns
+push "dhcp-option DNS 10.8.0.1"
+#push "dhcp-option DNS 8.8.4.4"
+push "block-outside-dns"
+keepalive 10 120
+crl-verify crl.pem
+cipher AES-256-CBC
+ncp-ciphers AES-256-CBC
+status /var/log/openvpn
+verb 3
+management localhost 7777
+```
+- Despues hacemos la siguiente instalacion de pihole y unbouned
+
 ## Instalacion de pihole
 1. Instalamos primero con este comando, el cual posiblemente dara error por lo que usaremos el segundos seguido.
 
@@ -32,6 +76,7 @@ En la configuracion, seleccionar la interfaz que fue creada al instalar openvpn,
 - Reiniciamos el servicio de openvpn con
 
 ```
+systemctl stop openvpn
 systemctl start openvpn-server@server.service
 systemctl status openvpn-server@server.service
 ```
@@ -114,8 +159,30 @@ interface ovpn-client add name=ovpn-client connect-to=xxx.xxx.xxx.xxx port=1194 
 - Cambia los Dns en 
 ```
 /ip dns
-set allow-remote-requests=no servers=10.8.0.1
+set allow-remote-requests=yes servers=10.8.0.1,8.8.8.8
 ```
+- Posiblemente tengas que agregar algo asi tambien
+```
+/ip firewall address-list
+add address=10.8.0.0/24 comment="MAQUINA DEL ADMINISTRADOR" list=\
+    ssh-permitido
+```
+
+- Quizas algo mas asi
+```
+/ip firewall filter
+add action=accept chain=input comment="Salida ssh" dst-address-list=\
+    ssh-permitido
+add action=accept chain=input comment="OVPN pass" disabled=yes dst-port=1194 \
+    protocol=tcp src-address-list=ssh-permitido
+```
+- y en el mangle
+```
+/ip firewall mangle
+add action=change-mss chain=forward connection-mark=under_OPV new-mss=1360 \
+    passthrough=yes protocol=tcp tcp-flags=syn tcp-mss=!0-1375
+```
+
 <img width="319" alt="image" src="https://user-images.githubusercontent.com/13319563/222987641-ad3f3498-df98-4f7f-8a7b-784f5a89027e.png">
 
 
