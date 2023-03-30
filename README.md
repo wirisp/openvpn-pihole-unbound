@@ -276,7 +276,8 @@ nameserver 1.0.0.1
 - Permitir redireccion de trafico
 ```
 echo "net.ipv4.ip_forward = 1
-net.ipv6.conf.all.forwarding = 1" >/etc/sysctl.d/wg.conf
+#net.ipv6.conf.all.forwarding = 1
+net.ipv6.conf.all.disable_ipv6 = 0" >/etc/sysctl.conf
 ```
 - Error de que openvpn no inicia correctamente por que no encuentra algun certificado
 
