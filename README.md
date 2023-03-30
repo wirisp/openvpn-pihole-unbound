@@ -278,3 +278,21 @@ nameserver 1.0.0.1
 echo "net.ipv4.ip_forward = 1
 net.ipv6.conf.all.forwarding = 1" >/etc/sysctl.d/wg.conf
 ```
+- Error de que openvpn no inicia correctamente por que no encuentra algun certificado
+
+```
+systemctl start openvpn
+systemctl status openvpn
+```
+Checamos el nombre del certificado faltante por ejemplo **Mk43**
+Ahora creamos ese cliente con
+```
+sudo bash openvpn-install-routeros.sh
+````
+le damos en crear nuevo y colocamos el nombre tal cual aparece el faltante, posteriormente volcemos a ejecutar el comando y ahora lo eliminamos, despues reiniciamos openvpn con 
+
+```
+systemctl stop openvpn
+systemctl start openvpn
+systemctl status openvpn
+```
