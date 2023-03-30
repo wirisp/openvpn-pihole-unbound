@@ -190,8 +190,18 @@ REV_SERVER=false" >> /etc/pihole/setupVars.conf
 wget https://raw.githubusercontent.com/wirisp/openvpn-pihole-unbound/main/unbound.conf -O unbound.conf
 \mv unbound.conf /etc/unbound/unbound.conf
 ```
+- Ahora importamos este archivo pi-hole.conf
+```
+wget https://raw.githubusercontent.com/wirisp/openvpn-pihole-unbound/main/pi-hole.conf -O pi-hole.conf
+\mv pi-hole.conf /etc/unbound/unbound.conf.d/pi-hole.conf
+```
+- Checamos la configuracion y hacemos un test `unbound-checkconf  /etc/unbound/unbound.conf.d/pi-hole.conf` la respuesta deberia ser asi `no errors in in /etc/unbound/unbound.conf.d/pi-hole.conf`
+- Activamos el servicio unbound
 
-- Activamos con
+```
+sudo service unbound start
+dig github.com @127.0.0.1 -p 5335
+```
 
 ```
 systemctl enable pihole-FTL
