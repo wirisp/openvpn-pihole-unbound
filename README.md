@@ -19,9 +19,14 @@ systemctl status openvpn-server@server.service
 ```
 
 Con esto ya tenemos openvpn en el servidor, podemos usarlo con dispocitivos y funcionara muy bien, todo el trafico pasara por su interfaz, ahora si queremos usar pihole y unbound, ademas solamente usarlo como resolvedor DNS, entonces en la configuracion de openvpn hacemos lo siguiente.
+Aqui cambiamos la ip publica de nuestro servidor, y la cambiamos en **local 38.242.229.XYZ**
 
 ```
-local 38.242.2xx.xxx
+nano /etc/openvpn/server/server.conf
+```
+
+```
+local 38.242.229.XYZ
 port 1194
 proto tcp
 dev tun
@@ -31,7 +36,7 @@ persist-key
 persist-tun
 client-to-client
 client-config-dir /etc/openvpn/client/
-topology subnet
+#topology subnet
 ca ca.crt
 cert server.crt
 key server.key
@@ -43,14 +48,14 @@ dh dh.pem
 #tls-cipher TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256
 auth SHA1
 server 10.8.0.0 255.255.255.0
-server-ipv6 fddd:1194:1194:1194::/64
-#Comenta esta linea
+#server-ipv6 fddd:1194:1194:1194::/64
 #push "redirect-gateway def1 ipv6 bypass-dhcp"
 ifconfig-pool-persist ipp.txt
-#Coloca o agrega esta linea de los dns
+#push "dhcp-option DNS 161.97.189.51"
+#push "dhcp-option DNS 161.97.189.52"
+push "10.8.0.1"
+#push "route 10.8.0.1 255.255.255.255"
 push "dhcp-option DNS 10.8.0.1"
-#push "dhcp-option DNS 8.8.4.4"
-push "block-outside-dns"
 keepalive 10 120
 crl-verify crl.pem
 cipher AES-256-CBC
@@ -59,7 +64,31 @@ status /var/log/openvpn
 verb 3
 management localhost 7777
 ```
-- Despues hacemos la siguiente instalacion de pihole y unbouned
+
+Tambien comentamos unas lineas en el cliente , por lo que quedara asi
+
+```
+/etc/openvpn/server/client-common.txt
+```
+Deberia de quedar asi (cambia la ip publica por la de tu servidor**38.242.229.xyz** )
+```
+client
+dev tun
+proto tcp
+remote 38.242.229.xyz 1194
+resolv-retry infinite
+nobind
+persist-key
+persist-tun
+remote-cert-tls server
+auth SHA1
+cipher AES-256-CBC
+#ignore-unknown-option block-outside-dns
+#block-outside-dns
+verb 3
+```
+
+- Despues hacemos la siguiente instalacion de pihole y unbound
 
 ## Instalacion de pihole
 1. Instalamos primero con este comando, el cual posiblemente dara error por lo que usaremos el segundos seguido.
@@ -243,4 +272,9 @@ nano /etc/resolvconf/resolv.conf.d/tail
 #Colocar dentro
 nameserver 1.1.1.1
 nameserver 1.0.0.1
+```
+- Permitir redireccion de trafico
+```
+echo "net.ipv4.ip_forward = 1
+net.ipv6.conf.all.forwarding = 1" >/etc/sysctl.d/wg.conf
 ```
