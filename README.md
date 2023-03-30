@@ -19,14 +19,34 @@ systemctl status openvpn-server@server.service
 ```
 
 Con esto ya tenemos openvpn en el servidor, podemos usarlo con dispocitivos y funcionara muy bien, todo el trafico pasara por su interfaz, ahora si queremos usar pihole y unbound, ademas solamente usarlo como resolvedor DNS, entonces en la configuracion de openvpn hacemos lo siguiente.
-Aqui cambiamos la ip publica de nuestro servidor, y la cambiamos en **local 38.242.229.XYZ**
+
+#### Con este comando sabremos nuestra direccion Ip publica
+
+- Permitir redireccion de trafico
+```
+echo "net.ipv4.ip_forward = 1
+net.ipv6.conf.all.disable_ipv6=1
+net.ipv6.conf.default.disable_ipv6=1
+net.ipv6.conf.lo.disable_ipv6 = 1" >/etc/sysctl.conf
+```
+- Checar nuestra Ip 
 
 ```
-nano /etc/openvpn/server/server.conf
+SERVER_PUB_IPV4=$(dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | awk -F'"' '{ print $2}')
+read -rp "IPv4 public address: " -e -i "$SERVER_PUB_IPV4" SERVER_PUB_IP
 ```
 
+_Con el comando anterior ya tendras tu Ip, si no te funciono, pero ya sabes cual es la ip de tu servidor publico, entonces en el paso siguiente solo cambia la variable $SERVER_PUB_IP por la ip ejemplo **local 38.242.229.xyz**_
+
+- Reiniciar o borrar la config por default
+
 ```
-local 38.242.229.XYZ
+> /etc/openvpn/server/server.conf
+```
+
+- Enviar los datos o configuraciones al servidor **server.conf**
+```
+echo "local $SERVER_PUB_IP
 port 1194
 proto tcp
 dev tun
@@ -62,15 +82,17 @@ cipher AES-256-CBC
 ncp-ciphers AES-256-CBC
 status /var/log/openvpn
 verb 3
-management localhost 7777
+management localhost 7777" >/etc/openvpn/server/server.conf
 ```
 
 Tambien comentamos unas lineas en el cliente , por lo que quedara asi
 
 ```
-/etc/openvpn/server/client-common.txt
+nano /etc/openvpn/server/client-common.txt
 ```
+
 Deberia de quedar asi (cambia la ip publica por la de tu servidor**38.242.229.xyz** )
+
 ```
 client
 dev tun
@@ -109,6 +131,18 @@ systemctl stop openvpn
 systemctl start openvpn-server@server.service
 systemctl status openvpn-server@server.service
 ```
+
+- Cambio de password con
+
+```
+pihole -a -p
+```
+- Este comando es para desinstalar pihole por si salio mal la instalacion
+
+```
+pihole uninstall
+```
+
 ## Instalacion y configuracion de unbound
 Instalamos unbound con el siguiente comando, no antes de darle permisos
 ```
@@ -143,6 +177,11 @@ DNSSEC=false
 REV_SERVER=false" >> /etc/pihole/setupVars.conf 
 ```
 
+```
+wget https://raw.githubusercontent.com/wirisp/openvpn-pihole-unbound/main/unbound.conf -O unbound.conf
+\mv unbound.conf /etc/unbound/unbound.conf
+```
+
 - Activamos con
 
 ```
@@ -153,6 +192,94 @@ systemctl enable pihole-FTL
 ```
 sudo reboot
 ```
+- Despues de reiniciar checar los servicios
+
+```
+systemctl status openvpn
+systemctl status unbound
+systemctl status pihole-FTL
+```
+
+### Errores y soluciones posibles
+- Error de que openvpn no inicia correctamente por que no encuentra algun certificado
+
+```
+systemctl start openvpn
+systemctl status openvpn
+```
+Checamos el nombre del certificado faltante por ejemplo **Mk43**
+Ahora creamos ese cliente con
+```
+sudo bash openvpn-install-routeros.sh
+````
+le damos en crear nuevo y colocamos el nombre tal cual aparece el faltante, posteriormente volcemos a ejecutar el comando y ahora lo eliminamos, despues reiniciamos openvpn con 
+
+```
+systemctl stop openvpn
+systemctl start openvpn
+systemctl status openvpn
+```
+
+- El Status de apache2 marca error
+
+Instalamos net-tools para solucionar el error del puerto 80
+```
+apt install net-tools
+```
+```
+netstat -ltnp | grep :80
+```
+Ahora hacemos kill al pid que obtuvimos, por ejemplo el 1047
+```
+sudo kill -9 1047
+```
+```
+sudo systemctl stop apache2.service 
+sudo systemctl enable apache2.service 
+sudo systemctl start apache2.service
+sudo systemctl status apache2.service
+```
+
+- Dns no resolve dominios
+
+_Si hacemos un ping google.com y no da respuesta, entonces hay que modificar los dns_
+
+Checar nuestro archivo resolv.conf
+```
+cat /etc/resolv.conf
+```
+Si el resultado da el siguiente y no da ping a ningun sitio
+
+```
+nameserver 127.0.0.1
+```
+Entonces lo cambiamos para tener ping.
+
+```
+nano /etc/resolv.conf
+```
+Colocar
+```
+nameserver 8.8.8.8
+```
+Y si al reiniciar se borran los datos entonces hay que editar alguno de estos dos archivos
+
+Editar
+```
+nano /etc/resolvconf/resolv.conf.d/head
+#Colocar dentro
+nameserver 1.1.1.1
+nameserver 1.0.0.1
+```
+o si no funciona este
+
+```
+nano /etc/resolvconf/resolv.conf.d/tail
+#Colocar dentro
+nameserver 1.1.1.1
+nameserver 1.0.0.1
+```
+
 
 ## Conexion a mikrotik
 - Subir los archivos del cliente correspondientes, al Administrador de archivos, en este caso el cliente se llama Mk17, por lo que se suben `Mk17.crt` y `Mk17.key`
@@ -217,83 +344,9 @@ add action=change-mss chain=forward connection-mark=under_OPV new-mss=1360 \
 
 >Listo ya tenemos configurado y corriendo Openvpn con pihole y unbound, podemos administrar desde `IP/admin`
 
-- Cambio de password con
-
-```
-pihole -a -p
-```
-
-- Desinstalacion de pihole
-```
-pihole uninstall
-```
 - Cliente openvpn linux pop Os
 `https://support.system76.com/articles/use-openvpn/`
 
-- posibles errores de apache2
-Instalamos net-tools para solucionar el error del puerto 80
-```
-apt install net-tools
-```
-```
-netstat -ltnp | grep :80
-```
-Ahora hacemos kill al pid que obtuvimos, por ejemplo el 1047
-```
-sudo kill -9 1047
-```
-```
-sudo systemctl stop apache2.service 
-sudo systemctl enable apache2.service 
-sudo systemctl start apache2.service
-sudo systemctl status apache2.service
-```
-- Dns no resolve dominios
-```
-nano /etc/resolv.conf
-```
-Colocar
-```
-nameserver 8.8.8.8
-```
-Y si al reiniciar se borran los datos entonces hay que editar alguno de estos dos archivos
 
-Editar
-```
-nano /etc/resolvconf/resolv.conf.d/head
-#Colocar dentro
-nameserver 1.1.1.1
-nameserver 1.0.0.1
-```
-o si no funciona este
 
-```
-nano /etc/resolvconf/resolv.conf.d/tail
-#Colocar dentro
-nameserver 1.1.1.1
-nameserver 1.0.0.1
-```
-- Permitir redireccion de trafico
-```
-echo "net.ipv4.ip_forward = 1
-#net.ipv6.conf.all.forwarding = 1
-net.ipv6.conf.all.disable_ipv6 = 0" >/etc/sysctl.conf
-```
-- Error de que openvpn no inicia correctamente por que no encuentra algun certificado
 
-```
-systemctl start openvpn
-systemctl status openvpn
-```
-Checamos el nombre del certificado faltante por ejemplo **Mk43**
-Ahora creamos ese cliente con
-```
-sudo bash openvpn-install-routeros.sh
-````
-le damos en crear nuevo y colocamos el nombre tal cual aparece el faltante, posteriormente volcemos a ejecutar el comando y ahora lo eliminamos, despues reiniciamos openvpn con 
-
-```
-systemctl stop openvpn
-systemctl start openvpn
-systemctl status openvpn
-```
