@@ -1,8 +1,10 @@
 # openvpn-pihole-unbound
 servidor  = Debian 11, instalacion de openvpn, pihole y unbound, 
 
-## Instalacion de Openvpn para mikrotik
-- Primero descargamos el script a nuestro sistema , ene ste caso, debian 11.
+## Instalacion de Openvpn para mikrotik en servidor debian / ubuntu..
+
+- Primero descargamos el script a nuestro sistema , en este caso, debian 11.
+
 ```
 wget https://raw.githubusercontent.com/volstr/openvpn-install-routeros/main/openvpn-install-routeros.sh -O openvpn-install-routeros.sh
 #wget https://raw.githubusercontent.com/wirisp/openvpn-pihole-unbound/main/openvpn-install-routeros.sh -O openvpn-install-routeros.sh
@@ -20,8 +22,6 @@ systemctl status openvpn-server@server.service
 
 Con esto ya tenemos openvpn en el servidor, podemos usarlo con dispocitivos y funcionara muy bien, todo el trafico pasara por su interfaz, ahora si queremos usar pihole y unbound, ademas solamente usarlo como resolvedor DNS, entonces en la configuracion de openvpn hacemos lo siguiente.
 
-#### Con este comando sabremos nuestra direccion Ip publica
-
 - Permitir redireccion de trafico
 ```
 echo "net.ipv4.ip_forward = 1
@@ -29,6 +29,11 @@ net.ipv6.conf.all.disable_ipv6=1
 net.ipv6.conf.default.disable_ipv6=1
 net.ipv6.conf.lo.disable_ipv6 = 1" >/etc/sysctl.conf
 ```
+- Guardamos cambios
+```
+sysctl -p
+```
+
 - Checar nuestra Ip 
 
 ```
@@ -112,17 +117,21 @@ verb 3
 
 - Despues hacemos la siguiente instalacion de pihole y unbound
 
-## Instalacion de pihole
-1. Instalamos primero con este comando, el cual posiblemente dara error por lo que usaremos el segundos seguido.
+## Instalacion de pihole en el servidor
+
+- Lo Instalamos primero con este comando, el cual posiblemente dara error por lo que usaremos el segundos seguido.
 
 ```
 curl -sSL https://install.pi-hole.net | sudo bash
 ```
-Si da error entonces usar:
+
+- Si recibes un error, entonces usar:
+
 ```
 curl -sSL https://install.pi-hole.net | PIHOLE_SKIP_OS_CHECK=true bash
 ```
-En la configuracion, seleccionar la interfaz que fue creada al instalar openvpn, la cual deveria ser `tun0` o algo parecido.
+
+_En la configuracion, seleccionar la interfaz que fue creada al instalar openvpn, la cual deveria ser `tun0` o algo parecido._
 
 - Reiniciamos el servicio de openvpn con
 
@@ -131,7 +140,7 @@ systemctl stop openvpn
 systemctl start openvpn-server@server.service
 systemctl status openvpn-server@server.service
 ```
-
+_Si recibes un error checa mas abajo hay posibles errores y soluciones_
 - Cambio de password con
 
 ```
@@ -200,7 +209,7 @@ systemctl status unbound
 systemctl status pihole-FTL
 ```
 
-### Errores y soluciones posibles
+## Errores y soluciones posibles
 - Error de que openvpn no inicia correctamente por que no encuentra algun certificado
 
 ```
@@ -303,35 +312,34 @@ certificate import passphrase="" file-name=Mk17.key
 - Creamos el perfil que usaremos
 
 ```
-ppp profile add name=OVPN-client change-tcp-mss=yes only-one=yes use-encryption=yes use-mpls=no use-compression=no
+/ppp profile add name=OVPN-client change-tcp-mss=yes only-one=yes use-encryption=yes use-mpls=no use-compression=no
 ```
-- Creamos la inteface ppp para ovpn
+- Creamos la inteface ppp para ovpn, cambia **xxx.xxx.xxx.xxx** por la ip de tu servidsor openvpn
 
 <img width="291" alt="image" src="https://user-images.githubusercontent.com/13319563/222987665-9967a841-7c20-498e-8d89-a64fe9927757.png">
 
 ```
-interface ovpn-client add name=ovpn-client connect-to=xxx.xxx.xxx.xxx port=1194 mode=ip user="openvpn" password="" profile=OVPN-client certificate=Mk17.crt_0 auth=sha1 cipher=aes256 add-default-route=yes
+/interface ovpn-client add name=ovpn-client connect-to=xxx.xxx.xxx.xxx port=1194 mode=ip user="openvpn" password="" profile=OVPN-client certificate=Mk17.crt_0 auth=sha1 cipher=aes256 add-default-route=yes
 ```
 - Cambia los Dns en 
 ```
 /ip dns
-set allow-remote-requests=yes servers=10.8.0.1,8.8.8.8
-```
-- Posiblemente tengas que agregar algo asi tambien
-```
-/ip firewall address-list
-add address=10.8.0.0/24 comment="MAQUINA DEL ADMINISTRADOR" list=\
-    ssh-permitido
+set allow-remote-requests=yes servers=10.8.0.1
 ```
 
-- Quizas algo mas asi
+- Bloqueamos todas las peticiones entrantes de DNS
 ```
 /ip firewall filter
-add action=accept chain=input comment="Salida ssh" dst-address-list=\
-    ssh-permitido
-add action=accept chain=input comment="OVPN pass" disabled=yes dst-port=1194 \
-    protocol=tcp src-address-list=ssh-permitido
+add action=drop chain=input connection-state=new dst-port=53 in-interface-list=WANs protocol=udp
+add action=drop chain=input connection-state=new dst-port=53 in-interface-list=WANs protocol=tcp
 ```
+
+-Redirigimos las peticiones Dns a nuestro pihole u openvpn
+
+```
+/ip firewall nat add chain=dstnat action=redirect to-ports=53 protocol=udp dst-port=53 to-address=10.8.0.1 comment="DIRECT ALL DNS REQUESTS TO MIKROTIK INTERNAL DNS SERVER."
+```
+
 - y en el mangle
 ```
 /ip firewall mangle
