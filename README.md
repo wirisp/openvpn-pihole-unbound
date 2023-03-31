@@ -313,7 +313,10 @@ nano /etc/resolvconf/resolv.conf.d/tail
 nameserver 1.1.1.1
 nameserver 1.0.0.1
 ```
-
+Despues actualizamos con
+```
+service resolvconf restart
+```
 
 ## Conexion a mikrotik
 - Subir los archivos del cliente correspondientes, al Administrador de archivos, en este caso el cliente se llama Mk17, por lo que se suben `Mk17.crt` y `Mk17.key`
