@@ -162,6 +162,13 @@ wget https://raw.githubusercontent.com/wirisp/openvpn-pihole-unbound/main/unboun
 chmod +x *.sh
 ./unbound.sh 
 ```
+- Ahora enviamos a root
+
+```
+wget -O root.hints https://www.internic.net/domain/named.root
+sudo mv root.hints /var/lib/unbound/
+```
+
 Despues editamos el archivo
 
 ```
