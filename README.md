@@ -114,7 +114,7 @@ cipher AES-256-CBC
 #block-outside-dns
 verb 3
 ```
-- Colocarle una ip fija a nuestro cliente creado `Mk9`
+- Colocarle una ip fija a nuestro cliente creado `Mk17` por ejemplo.
 
 ```
 echo "ifconfig-push 10.8.0.2 10.8.0.1" > /etc/openvpn/client/Mk17
