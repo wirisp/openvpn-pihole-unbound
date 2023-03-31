@@ -383,6 +383,12 @@ add action=change-mss chain=forward connection-mark=under_OPV new-mss=1360 \
 - Cliente openvpn linux pop Os
 `https://support.system76.com/articles/use-openvpn/`
 
+### Comandos utiles
 
+- Buscar dentro de una carpeta y siguientes
+
+```
+grep -rl "8.8.8.8" /etc
+```
 
 
