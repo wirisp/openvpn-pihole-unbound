@@ -114,6 +114,14 @@ cipher AES-256-CBC
 #block-outside-dns
 verb 3
 ```
+- Colocarle una ip fija a nuestro cliente creado `Mk9`
+
+```
+echo "ifconfig-push 10.8.0.2 10.8.0.1" > /etc/openvpn/client/Mk17
+
+systemctl restart openvpn-server@server
+```
+_La ip asignada a este cliente es la `10.8.0.2`_
 
 - Despues hacemos la siguiente instalacion de pihole y unbound
 
