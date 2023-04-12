@@ -352,7 +352,7 @@ certificate import passphrase="" file-name=Mk17.key
 - Cambia los Dns en 
 ```
 /ip dns
-set allow-remote-requests=yes servers=10.8.0.1
+set servers=10.8.0.1
 ```
 
 - Bloqueamos todas las peticiones entrantes de DNS
