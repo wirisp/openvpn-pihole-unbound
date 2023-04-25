@@ -350,16 +350,16 @@ certificate import passphrase="" file-name=Mk17.key
 /interface ovpn-client add name=ovpn-client connect-to=xxx.xxx.xxx.xxx port=1194 mode=ip user="openvpn" password="" profile=OVPN-client certificate=Mk17.crt_0 auth=sha1 cipher=aes256 add-default-route=yes
 ```
 
-- Reglas firewall y nat
+- Lista de direcciones
+- ***192.168.5.0/24 list="Red LAN"*** son las ip de mi hotspot en LAN
+- ***10.8.0.0/24 list="Red LAN"*** es la entrada del openvpn
+
 
 
 ```
 /ip firewall address-list
 add address=192.168.5.0/24 list="Red LAN"
 add address=10.8.0.0/24 list="Red LAN"
-add address=172.5.0.0/24 list="Red LAN"
-add address=192.168.1.0/24 comment="MAQUINA DEL ADMINISTRADOR" list=\
-    ssh-permitido
 add address=192.168.5.0/24 comment="MAQUINA DEL ADMINISTRADOR" list=\
     ssh-permitido
 add address=10.8.0.0/24 comment="MAQUINA DEL ADMINISTRADOR" list=\
