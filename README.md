@@ -355,24 +355,81 @@ certificate import passphrase="" file-name=Mk17.key
 set servers=10.8.0.1
 ```
 
-- Bloqueamos todas las peticiones entrantes de DNS
+- Reglas firewall y nat
+```
+/ip firewall address-list
+add address=192.168.5.0/24 list="Red LAN"
+add address=10.8.0.0/24 list="Red LAN"
+add address=172.5.0.0/24 list="Red LAN"
+add address=192.168.1.0/24 comment="MAQUINA DEL ADMINISTRADOR" list=\
+    ssh-permitido
+add address=192.168.5.0/24 comment="MAQUINA DEL ADMINISTRADOR" list=\
+    ssh-permitido
+add address=10.8.0.0/24 comment="MAQUINA DEL ADMINISTRADOR" list=\
+    ssh-permitido
+```
+- Reglas firewall filter
+_in-interface-list=WANs es la interfaz de entrada de internet_
+
 ```
 /ip firewall filter
-add action=drop chain=input connection-state=new dst-port=53 in-interface-list=WANs protocol=udp
-add action=drop chain=input connection-state=new dst-port=53 in-interface-list=WANs protocol=tcp
+add action=passthrough chain=unused-hs-chain comment=\
+    "===============INICIAN-REGLAS===============" disabled=yes
+add action=drop chain=input connection-state=new dst-port=53 \
+    in-interface-list=WANs protocol=udp
+add action=drop chain=input connection-state=new dst-port=53 \
+    in-interface-list=WANs protocol=tcp
+add action=accept chain=input comment="Salida ssh" dst-address-list=\
+    ssh-permitido
+add action=accept chain=output comment="Salida ssh" dst-address-list=\
+    ssh-permitido
+add action=accept chain=input comment="OVPN pass" dst-port=1194 protocol=tcp \
+    src-address-list=ssh-permitido
+add action=accept chain=input comment="Winbox Acept" dst-port=8291 protocol=\
+    tcp src-address-list=ssh-permitido
+add action=drop chain=input comment=\
+    "ACEPTO SSH DESDE LAS MAQUINAS EN LA LISTA ssh-permitido" dst-port=22 \
+    protocol=tcp src-address-list=!ssh-permitido
+add action=accept chain=input comment=IN_CONN_ESTABLISHED_Y_RELATED \
+    connection-state=established,related
+add action=drop chain=input comment=IN_DROP_CONN_INVALID connection-state=\
+    invalid
+add action=accept chain=input comment=IN_CONN_RED_LAN src-address-list=\
+    "Red LAN"
+add action=drop chain=input comment=IN_DROP_ALL
+add action=accept chain=forward comment=FW_CONN_ESTABLISHED_Y_RELATED \
+    connection-state=established,related
+add action=drop chain=forward comment=FW_DROP_CONN_INVALID connection-state=\
+    invalid
+add action=accept chain=forward comment=FW_CONN_RED_LAN src-address-list=\
+    "Red LAN"
+add action=drop chain=forward comment="FW_DROP_ALL, Excepto DST-NAT" \
+    connection-nat-state=!dstnat
 ```
 
--Redirigimos las peticiones Dns a nuestro pihole u openvpn
-
-```
-/ip firewall nat add chain=dstnat action=redirect to-ports=53 protocol=udp dst-port=53 to-address=10.8.0.1 comment="DIRECT ALL DNS REQUESTS TO MIKROTIK INTERNAL DNS SERVER."
-```
-
-- y en el mangle
+- Reglas mangle
 ```
 /ip firewall mangle
-add action=change-mss chain=forward connection-mark=under_OPV new-mss=1360 \
+add action=change-ttl chain=postrouting dst-address=192.168.5.0/24 new-ttl=\
+    set:3 passthrough=no
+add action=change-mss chain=forward connection-mark=under_Piwire new-mss=1360 \
     passthrough=yes protocol=tcp tcp-flags=syn tcp-mss=!0-1375
+```
+
+- Reglas Nat
+
+_in-interface-list=WANs es la interfaz de entrada de internet_
+
+```
+/ip firewall nat
+add action=passthrough chain=unused-hs-chain comment=\
+    "======================INICIAN-REGLAS=================" disabled=yes
+add action=redirect chain=dstnat comment=DNS-REDIRECT dst-port=53 protocol=\
+    udp to-addresses=10.8.0.1 to-ports=53
+add action=redirect chain=dstnat comment=DNS-REDIRECT dst-port=53 protocol=\
+    tcp to-addresses=10.8.0.1 to-ports=53
+add action=masquerade chain=srcnat comment=Masquerade-WANs \
+    out-interface-list=WANs
 ```
 
 <img width="319" alt="image" src="https://user-images.githubusercontent.com/13319563/222987641-ad3f3498-df98-4f7f-8a7b-784f5a89027e.png">
