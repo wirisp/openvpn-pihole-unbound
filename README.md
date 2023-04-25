@@ -349,13 +349,10 @@ certificate import passphrase="" file-name=Mk17.key
 ```
 /interface ovpn-client add name=ovpn-client connect-to=xxx.xxx.xxx.xxx port=1194 mode=ip user="openvpn" password="" profile=OVPN-client certificate=Mk17.crt_0 auth=sha1 cipher=aes256 add-default-route=yes
 ```
-- Cambia los Dns en 
-```
-/ip dns
-set servers=10.8.0.1
-```
 
 - Reglas firewall y nat
+
+
 ```
 /ip firewall address-list
 add address=192.168.5.0/24 list="Red LAN"
@@ -369,6 +366,8 @@ add address=10.8.0.0/24 comment="MAQUINA DEL ADMINISTRADOR" list=\
     ssh-permitido
 ```
 - Reglas firewall filter
+
+
 _in-interface-list=WANs es la interfaz de entrada de internet_
 
 ```
@@ -408,6 +407,8 @@ add action=drop chain=forward comment="FW_DROP_ALL, Excepto DST-NAT" \
 ```
 
 - Reglas mangle
+
+
 ```
 /ip firewall mangle
 add action=change-ttl chain=postrouting dst-address=192.168.5.0/24 new-ttl=\
@@ -430,6 +431,11 @@ add action=redirect chain=dstnat comment=DNS-REDIRECT dst-port=53 protocol=\
     tcp to-addresses=10.8.0.1 to-ports=53
 add action=masquerade chain=srcnat comment=Masquerade-WANs \
     out-interface-list=WANs
+```
+- Cambia los Dns en 
+```
+/ip dns
+set servers=10.8.0.1
 ```
 
 <img width="319" alt="image" src="https://user-images.githubusercontent.com/13319563/222987641-ad3f3498-df98-4f7f-8a7b-784f5a89027e.png">
