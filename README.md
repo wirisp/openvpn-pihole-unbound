@@ -49,9 +49,11 @@ _Con el comando anterior ya tendras tu Ip, si no te funciono, pero ya sabes cual
 > /etc/openvpn/server/server.conf
 ```
 
-- Enviar los datos o configuraciones al servidor **server.conf**
+- Colocar los datos o configuraciones al servidor **server.conf**
+
+nano /etc/openvpn/server/server.conf
 ```
-echo "local $SERVER_PUB_IP
+local $SERVER_PUB_IP
 port 1194
 proto tcp
 dev tun
@@ -74,12 +76,12 @@ dh dh.pem
 auth SHA1
 server 10.8.0.0 255.255.255.0
 #server-ipv6 fddd:1194:1194:1194::/64
-#push "redirect-gateway def1 ipv6 bypass-dhcp"
+#push redirect-gateway def1 ipv6 bypass-dhcp
 ifconfig-pool-persist ipp.txt
-#push "dhcp-option DNS 161.97.189.51"
-#push "dhcp-option DNS 161.97.189.52"
+#push dhcp-option DNS 161.97.189.51
+#push dhcp-option DNS 161.97.189.52
 push "10.8.0.1"
-#push "route 10.8.0.1 255.255.255.255"
+#push route 10.8.0.1 255.255.255.255
 push "dhcp-option DNS 10.8.0.1"
 keepalive 10 120
 crl-verify crl.pem
@@ -87,7 +89,7 @@ cipher AES-256-CBC
 ncp-ciphers AES-256-CBC
 status /var/log/openvpn
 verb 3
-management localhost 7777" >/etc/openvpn/server/server.conf
+management localhost 7777
 ```
 
 Tambien comentamos unas lineas en el cliente , por lo que quedara asi
